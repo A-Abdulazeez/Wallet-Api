@@ -1,6 +1,8 @@
 package az.project.walletapi.controller;
 
+import az.project.walletapi.dtos.request.LoginCustomerRequest;
 import az.project.walletapi.dtos.request.RegisterCustomerRequest;
+import az.project.walletapi.dtos.response.LoginCustomerResponse;
 import az.project.walletapi.dtos.response.RegisterCustomerResponse;
 import az.project.walletapi.service.AuthService;
 import jakarta.validation.Valid;
@@ -26,5 +28,11 @@ public class AuthController {
     public ResponseEntity<RegisterCustomerResponse> registerCustomer(@Valid @RequestBody RegisterCustomerRequest request){
         RegisterCustomerResponse response = authService.registerCustomer(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginCustomerResponse> login(@Valid @RequestBody LoginCustomerRequest request){
+        LoginCustomerResponse response = authService.loginCustomer(request);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

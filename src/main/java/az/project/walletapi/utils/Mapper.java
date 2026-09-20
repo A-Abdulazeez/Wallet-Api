@@ -3,6 +3,7 @@ package az.project.walletapi.utils;
 import az.project.walletapi.data.model.Role;
 import az.project.walletapi.data.model.User;
 import az.project.walletapi.dtos.request.RegisterCustomerRequest;
+import az.project.walletapi.dtos.response.LoginCustomerResponse;
 import az.project.walletapi.dtos.response.RegisterCustomerResponse;
 
 public class Mapper {
@@ -22,6 +23,14 @@ public class Mapper {
         response.setFirstName(user.getFirstName());
         response.setLastName(user.getLastName());
         response.setEmail(user.getEmail());
+
+        return response;
+    }
+
+    public static LoginCustomerResponse mapToLogin(User user) {
+        LoginCustomerResponse response = new LoginCustomerResponse();
+        response.setEmail(user.getEmail());
+        response.setMessage(user.getFirstName() + " Logged in successfully");
 
         return response;
     }

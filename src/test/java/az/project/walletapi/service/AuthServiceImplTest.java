@@ -2,7 +2,9 @@ package az.project.walletapi.service;
 
 import az.project.walletapi.data.model.User;
 import az.project.walletapi.data.repository.UserRepository;
+import az.project.walletapi.dtos.request.LoginCustomerRequest;
 import az.project.walletapi.dtos.request.RegisterCustomerRequest;
+import az.project.walletapi.dtos.response.LoginCustomerResponse;
 import az.project.walletapi.dtos.response.RegisterCustomerResponse;
 import az.project.walletapi.exception.UserException;
 import org.junit.jupiter.api.Test;
@@ -12,6 +14,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -88,5 +92,65 @@ public class AuthServiceImplTest {
         User user = captor.getValue();
         assertEquals("hashedPassword", user.getPassword());
         assertEquals(request.getEmail(), response.getEmail());
+    }
+
+    @Test
+    public void loginCustomer_withValidCredentials_shouldLoginSuccessfully() {
+        User user = new User();
+        user.setEmail("az@gmail.com");
+        user.setPassword("password123");
+
+        LoginCustomerRequest request = new LoginCustomerRequest();
+        request.setEmail("az@gmail.com");
+        request.setPassword("password123");
+
+        when(userRepository.findByEmail(request.getEmail())).thenReturn(Optional.of(user));
+
+        when(passwordEncoder.matches(
+                request.getPassword(),
+                user.getPassword())).thenReturn(true);
+
+        LoginCustomerResponse response = authService.loginCustomer(request);
+        assertEquals(request.getEmail(), response.getEmail());
+
+        verify(userRepository).findByEmail(request.getEmail());
+
+        verify(passwordEncoder).matches(
+                request.getPassword(),
+                user.getPassword());
+
+    }
+
+    @Test
+    public void loginCustomer_whenEmailDoesNotExist_shouldThrowUserException() {
+        LoginCustomerRequest request = new LoginCustomerRequest();
+        request.setEmail("unknown@gmail.com");
+        request.setPassword("password123");
+
+        when(userRepository.findByEmail(request.getEmail())).thenReturn(Optional.empty());
+
+        assertThrows(UserException.class, () -> authService.loginCustomer(request));
+    }
+
+    @Test
+    public void loginCustomer_whenPasswordIsWrong_shouldThrowUserException() {
+        User user = new User();
+        user.setEmail("az@gmail.com");
+        user.setPassword("hashedPassword");
+
+        LoginCustomerRequest request = new LoginCustomerRequest();
+        request.setEmail("az@gmail.com");
+        request.setPassword("password123");
+
+
+        when(userRepository.findByEmail(request.getEmail())).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches(
+                request.getPassword(),
+                user.getPassword())).thenReturn(false);
+
+        assertThrows(UserException.class, () -> authService.loginCustomer(request));
+        verify(passwordEncoder).matches(
+                request.getPassword(),
+                user.getPassword());
     }
 }
