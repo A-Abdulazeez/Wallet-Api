@@ -7,12 +7,13 @@ import az.project.walletapi.dtos.request.RegisterCustomerRequest;
 import az.project.walletapi.dtos.response.LoginCustomerResponse;
 import az.project.walletapi.dtos.response.RegisterCustomerResponse;
 import az.project.walletapi.exception.UserException;
+import az.project.walletapi.utils.Mapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import static az.project.walletapi.utils.Mapper.map;
-import static az.project.walletapi.utils.Mapper.mapToLogin;
+import static az.project.walletapi.utils.Mapper.map;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -47,6 +48,6 @@ public class AuthServiceImpl implements AuthService {
        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) throw new UserException("Incorrect Email or Password");
 
        String token = jwtService.generateToken(user.getEmail());
-       return mapToLogin(user, token);
+       return Mapper.map(user, token);
     }
 }
