@@ -27,7 +27,7 @@ public class Mapper {
         return response;
     }
 
-    public static LoginCustomerResponse mapToLogin(User user, String token) {
+    public static LoginCustomerResponse map(User user, String token) {
         LoginCustomerResponse response = new LoginCustomerResponse();
         response.setEmail(user.getEmail());
         response.setToken(token);
