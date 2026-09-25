@@ -7,14 +7,14 @@ import az.project.walletapi.dtos.request.RegisterCustomerRequest;
 import az.project.walletapi.dtos.response.LoginCustomerResponse;
 import az.project.walletapi.exception.UserException;
 import az.project.walletapi.service.AuthService;
+import az.project.walletapi.service.JwtService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
@@ -28,6 +28,9 @@ public class LoginIntegrationTest {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private JwtService jwtService;
 
     @Test
     public void loginCustomer_withValidCredentials_shouldLoginSuccessfully() {
@@ -44,7 +47,10 @@ public class LoginIntegrationTest {
 
         LoginCustomerResponse response = authService.loginCustomer(loginRequest);
         assertEquals(response.getEmail(), registerRequest.getEmail());
+        assertNotNull(response.getToken());
 
+        String emailFromToken = jwtService.extractEmail(response.getToken());
+        assertEquals(emailFromToken, registerRequest.getEmail());
     }
 
     @Test

@@ -27,11 +27,11 @@ public class Mapper {
         return response;
     }
 
-    public static LoginCustomerResponse mapToLogin(User user) {
+    public static LoginCustomerResponse mapToLogin(User user, String token) {
         LoginCustomerResponse response = new LoginCustomerResponse();
         response.setEmail(user.getEmail());
+        response.setToken(token);
         response.setMessage(user.getFirstName() + " Logged in successfully");
-
         return response;
     }
 }

@@ -7,4 +7,5 @@ public class LoginCustomerResponse {
 
     private String email;
     private String message;
+    private String token;
 }

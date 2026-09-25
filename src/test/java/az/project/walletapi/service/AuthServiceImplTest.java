@@ -36,6 +36,9 @@ public class AuthServiceImplTest {
     @InjectMocks
     private AuthServiceImpl authService;
 
+    @Mock
+    private JwtService jwtService;
+
     @Test
     public void registerCustomer_withValidRequest_shouldRegisterCustomer() {
         RegisterCustomerRequest request = new RegisterCustomerRequest();
@@ -110,8 +113,11 @@ public class AuthServiceImplTest {
                 request.getPassword(),
                 user.getPassword())).thenReturn(true);
 
+        when(jwtService.generateToken(user.getEmail())).thenReturn("test-token");
+
         LoginCustomerResponse response = authService.loginCustomer(request);
         assertEquals(request.getEmail(), response.getEmail());
+        assertEquals("test-token", response.getToken());
 
         verify(userRepository).findByEmail(request.getEmail());
 

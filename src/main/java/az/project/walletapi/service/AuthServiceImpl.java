@@ -23,6 +23,9 @@ public class AuthServiceImpl implements AuthService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private JwtService jwtService;
+
 
     @Override
     public RegisterCustomerResponse registerCustomer(RegisterCustomerRequest request) {
@@ -40,9 +43,10 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public LoginCustomerResponse loginCustomer(LoginCustomerRequest request) {
-       User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new UserException("Email not Exist"));
-       if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) throw new UserException("Wrong password");
+       User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new UserException("Incorrect Email or Password"));
+       if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) throw new UserException("Incorrect Email or Password");
 
-       return mapToLogin(user);
+       String token = jwtService.generateToken(user.getEmail());
+       return mapToLogin(user, token);
     }
 }
