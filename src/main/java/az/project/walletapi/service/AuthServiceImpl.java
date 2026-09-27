@@ -48,6 +48,6 @@ public class AuthServiceImpl implements AuthService {
        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) throw new UserException("Incorrect Email or Password");
 
        String token = jwtService.generateToken(user.getEmail());
-       return Mapper.map(user, token);
+       return map(user, token);
     }
 }
