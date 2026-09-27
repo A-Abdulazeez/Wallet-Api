@@ -33,6 +33,8 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
+                        .requestMatchers("/api/customer/**")
+                        .hasRole("CUSTOMER")
                         .anyRequest().authenticated()
                 )
 
