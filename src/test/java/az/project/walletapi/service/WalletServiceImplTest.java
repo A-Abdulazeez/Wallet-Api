@@ -1,0 +1,78 @@
+package az.project.walletapi.service;
+
+import az.project.walletapi.data.model.User;
+import az.project.walletapi.data.model.Wallet;
+import az.project.walletapi.data.repository.UserRepository;
+import az.project.walletapi.data.repository.WalletRepository;
+import az.project.walletapi.dtos.response.CreateWalletResponse;
+import az.project.walletapi.exception.UserException;
+import az.project.walletapi.exception.WalletException;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+public class WalletServiceImplTest {
+
+    @Mock
+    private WalletRepository walletRepository;
+
+    @Mock
+    private UserRepository userRepository;
+
+    @InjectMocks
+    private WalletServiceImpl walletService;
+
+
+    @Test
+    public void createWallet_withValidUser_shouldCreateWallet() {
+        User user =  new User();
+        user.setEmail("Kesirat@gmail.com");
+        user.setFirstName("Kesirat");
+        user.setLastName("Amoke");
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+
+        when(walletRepository.existsByUserId(user.getId())).thenReturn(false);
+        when(walletRepository.save(any(Wallet.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(walletRepository.existsByAccountNumber(anyString())).thenReturn(false);
+
+        CreateWalletResponse response = walletService.createWallet(user.getEmail());
+        assertNotNull(response.getAccountNumber());
+        assertNotNull(response);
+        assertEquals(20, response.getAccountNumber().length());
+
+        verify(walletRepository).save(any(Wallet.class));
+    }
+
+    @Test
+    public void createWallet_withNonExistingUser_shouldThrowUserException() {
+        String email = "testing@gmail.com";
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+        assertThrows(UserException.class, () -> walletService.createWallet(email));
+
+        verify(walletRepository, never()).save(any(Wallet.class));
+
+    }
+
+    @Test
+    public void createWallet_whenUserAlreadyHasWallet_shouldThrowWalletException() {
+        User user =  new User();
+        user.setEmail("testing@gmail.com");
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+
+        when(walletRepository.existsByUserId(user.getId())).thenReturn(true);
+        assertThrows(WalletException.class, () -> walletService.createWallet(user.getEmail()));
+
+        verify(walletRepository, never()).save(any(Wallet.class));
+    }
+
+}

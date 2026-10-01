@@ -1,8 +1,11 @@
 package az.project.walletapi.utils;
 
 import az.project.walletapi.data.model.Role;
+import az.project.walletapi.data.model.Status;
 import az.project.walletapi.data.model.User;
+import az.project.walletapi.data.model.Wallet;
 import az.project.walletapi.dtos.request.RegisterCustomerRequest;
+import az.project.walletapi.dtos.response.CreateWalletResponse;
 import az.project.walletapi.dtos.response.CustomerProfileResponse;
 import az.project.walletapi.dtos.response.LoginCustomerResponse;
 import az.project.walletapi.dtos.response.RegisterCustomerResponse;
@@ -42,6 +45,14 @@ public class Mapper {
         response.setLastName(user.getLastName());
         response.setEmail(user.getEmail());
 
+        return response;
+    }
+
+    public static CreateWalletResponse map(Wallet wallet) {
+        CreateWalletResponse response = new CreateWalletResponse();
+        response.setAccountNumber(wallet.getAccountNumber());
+        response.setBalance(wallet.getBalance());
+        response.setStatus(Status.ACTIVE);
         return response;
     }
 }
