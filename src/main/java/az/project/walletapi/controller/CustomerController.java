@@ -1,6 +1,6 @@
 package az.project.walletapi.controller;
 
-import az.project.walletapi.dtos.response.CreateWalletResponse;
+import az.project.walletapi.dtos.response.WalletResponse;
 import az.project.walletapi.dtos.response.CustomerProfileResponse;
 import az.project.walletapi.service.CustomerService;
 import az.project.walletapi.service.WalletService;
@@ -34,18 +34,18 @@ public class CustomerController {
     }
 
     @PostMapping("/create-wallet")
-    public ResponseEntity<CreateWalletResponse> createWallet(Authentication authentication) {
+    public ResponseEntity<WalletResponse> createWallet(Authentication authentication) {
         String email = authentication.getName();
 
-        CreateWalletResponse response = walletService.createWallet(email);
+        WalletResponse response = walletService.createWallet(email);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/get-wallet")
-    public ResponseEntity<CreateWalletResponse> getWallet(Authentication authentication) {
+    public ResponseEntity<WalletResponse> getWallet(Authentication authentication) {
         String email = authentication.getName();
 
-        CreateWalletResponse response = walletService.getWallet(email);
+        WalletResponse response = walletService.getWallet(email);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

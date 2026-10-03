@@ -6,7 +6,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
-public class CreateWalletResponse {
+public class WalletResponse {
 
     private String accountNumber;
     private BigDecimal balance;

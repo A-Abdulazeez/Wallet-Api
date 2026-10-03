@@ -5,7 +5,7 @@ import az.project.walletapi.data.model.Status;
 import az.project.walletapi.data.model.User;
 import az.project.walletapi.data.model.Wallet;
 import az.project.walletapi.dtos.request.RegisterCustomerRequest;
-import az.project.walletapi.dtos.response.CreateWalletResponse;
+import az.project.walletapi.dtos.response.WalletResponse;
 import az.project.walletapi.dtos.response.CustomerProfileResponse;
 import az.project.walletapi.dtos.response.LoginCustomerResponse;
 import az.project.walletapi.dtos.response.RegisterCustomerResponse;
@@ -48,8 +48,8 @@ public class Mapper {
         return response;
     }
 
-    public static CreateWalletResponse map(Wallet wallet) {
-        CreateWalletResponse response = new CreateWalletResponse();
+    public static WalletResponse map(Wallet wallet) {
+        WalletResponse response = new WalletResponse();
         response.setAccountNumber(wallet.getAccountNumber());
         response.setBalance(wallet.getBalance());
         response.setStatus(Status.ACTIVE);

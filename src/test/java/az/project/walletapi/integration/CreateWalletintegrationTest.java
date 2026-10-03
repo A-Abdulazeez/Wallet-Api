@@ -6,7 +6,7 @@ import az.project.walletapi.data.model.Wallet;
 import az.project.walletapi.data.repository.UserRepository;
 import az.project.walletapi.data.repository.WalletRepository;
 import az.project.walletapi.dtos.request.RegisterCustomerRequest;
-import az.project.walletapi.dtos.response.CreateWalletResponse;
+import az.project.walletapi.dtos.response.WalletResponse;
 import az.project.walletapi.exception.UserException;
 import az.project.walletapi.exception.WalletException;
 import az.project.walletapi.service.AuthService;
@@ -48,7 +48,7 @@ public class CreateWalletintegrationTest {
 
         User savedUser = userRepository.findByEmail(request.getEmail()).orElseThrow();
 
-        CreateWalletResponse response = walletService.createWallet(savedUser.getEmail());
+        WalletResponse response = walletService.createWallet(savedUser.getEmail());
         Wallet savedWallet = walletRepository.findByUserId(savedUser.getId()).orElseThrow();
 
         assertNotNull(response.getAccountNumber());

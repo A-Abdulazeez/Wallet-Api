@@ -5,7 +5,7 @@ import az.project.walletapi.data.model.User;
 import az.project.walletapi.data.model.Wallet;
 import az.project.walletapi.data.repository.UserRepository;
 import az.project.walletapi.data.repository.WalletRepository;
-import az.project.walletapi.dtos.response.CreateWalletResponse;
+import az.project.walletapi.dtos.response.WalletResponse;
 import az.project.walletapi.exception.UserException;
 import az.project.walletapi.exception.WalletException;
 import org.junit.jupiter.api.Test;
@@ -47,7 +47,7 @@ public class WalletServiceImplTest {
         when(walletRepository.save(any(Wallet.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(walletRepository.existsByAccountNumber(anyString())).thenReturn(false);
 
-        CreateWalletResponse response = walletService.createWallet(user.getEmail());
+        WalletResponse response = walletService.createWallet(user.getEmail());
         assertNotNull(response.getAccountNumber());
         assertNotNull(response);
         assertEquals(20, response.getAccountNumber().length());
@@ -93,7 +93,7 @@ public class WalletServiceImplTest {
 
         when(walletRepository.findByUserId(user.getId())).thenReturn(Optional.of(wallet));
 
-        CreateWalletResponse response = walletService.getWallet(user.getEmail());
+        WalletResponse response = walletService.getWallet(user.getEmail());
         assertEquals(20, response.getAccountNumber().length());
         assertEquals(0, BigDecimal.ZERO.compareTo(response.getBalance()));
         assertNotNull(response);

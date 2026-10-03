@@ -5,7 +5,7 @@ import az.project.walletapi.data.model.User;
 import az.project.walletapi.data.model.Wallet;
 import az.project.walletapi.data.repository.UserRepository;
 import az.project.walletapi.data.repository.WalletRepository;
-import az.project.walletapi.dtos.response.CreateWalletResponse;
+import az.project.walletapi.dtos.response.WalletResponse;
 import az.project.walletapi.exception.UserException;
 import az.project.walletapi.exception.WalletException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +27,7 @@ public class WalletServiceImpl implements WalletService {
 
 
     @Override
-    public CreateWalletResponse createWallet(String email) {
+    public WalletResponse createWallet(String email) {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException("User not found"));
 
         if (walletRepository.existsByUserId(user.getId())) throw new WalletException("Wallet already exists");
@@ -44,7 +44,7 @@ public class WalletServiceImpl implements WalletService {
     }
 
     @Override
-    public CreateWalletResponse getWallet(String email) {
+    public WalletResponse getWallet(String email) {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException("User not found"));
         Wallet foundWallet = walletRepository.findByUserId(user.getId()).orElseThrow(() -> new WalletException("Wallet does not exist"));
 
