@@ -5,6 +5,7 @@ import az.project.walletapi.data.model.User;
 import az.project.walletapi.data.model.Wallet;
 import az.project.walletapi.data.repository.UserRepository;
 import az.project.walletapi.data.repository.WalletRepository;
+import az.project.walletapi.dtos.request.FundWalletRequest;
 import az.project.walletapi.dtos.response.WalletResponse;
 import az.project.walletapi.exception.UserException;
 import az.project.walletapi.exception.WalletException;
@@ -114,5 +115,101 @@ public class WalletServiceImplTest {
         when(walletRepository.findByUserId(user.getId())).thenReturn(Optional.empty());
 
         assertThrows(WalletException.class, () -> walletService.getWallet(user.getEmail()));
+    }
+
+    @Test
+    public void fundWallet_withValidAmount_shouldUpdateBalance() {
+        User user =  new User();
+        user.setEmail("Kesirat@gmail.com");
+        user.setFirstName("Kesirat");
+        user.setLastName("Amoke");
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+
+        Wallet wallet = new Wallet();
+        wallet.setAccountNumber("12345678901234567890");
+        wallet.setBalance(BigDecimal.ZERO);
+        wallet.setStatus(Status.ACTIVE);
+        wallet.setUser(user);
+
+        when(walletRepository.findByUserId(user.getId())).thenReturn(Optional.of(wallet));
+        when(walletRepository.save(any(Wallet.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        FundWalletRequest request = new FundWalletRequest();
+        request.setAmount(new  BigDecimal("10000"));
+
+        WalletResponse walletResponse = walletService.fundWallet(user.getEmail(), request);
+        assertNotNull(walletResponse);
+        assertEquals(10000, walletResponse.getBalance().intValue());
+
+        verify(walletRepository).save(wallet);
+    }
+
+    @Test
+    public void fundWallet_withNonExistingUser_shouldThrowUserException() {
+        String userEmail = "fakeemail@gmail.com";
+        when(userRepository.findByEmail(userEmail)).thenReturn(Optional.empty());
+
+        FundWalletRequest request = new FundWalletRequest();
+        request.setAmount(new  BigDecimal("10000"));
+
+        assertThrows(UserException.class, () -> walletService.fundWallet(userEmail, request));
+
+    }
+
+    @Test
+    public void fundWallet_withExistingUserButNoWallet_shouldThrowWalletException() {
+        User user =  new User();
+        user.setEmail("Kesirat@gmail.com");
+        user.setFirstName("Kesirat");
+        user.setLastName("Amoke");
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+
+        when(walletRepository.findByUserId(user.getId())).thenReturn(Optional.empty());
+
+        FundWalletRequest request = new FundWalletRequest();
+        request.setAmount(new  BigDecimal("10000"));
+        assertThrows(WalletException.class, () -> walletService.fundWallet(user.getEmail(), request));
+    }
+
+    @Test
+    public void fundWallet_withZeroAmount_shouldThrowWalletException() {
+        User user =  new User();
+        user.setEmail("Kesirat@gmail.com");
+        user.setFirstName("Kesirat");
+        user.setLastName("Amoke");
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+
+        Wallet wallet = new Wallet();
+        wallet.setAccountNumber("12345678901234567890");
+        wallet.setBalance(BigDecimal.ZERO);
+        wallet.setStatus(Status.ACTIVE);
+        wallet.setUser(user);
+
+        when(walletRepository.findByUserId(user.getId())).thenReturn(Optional.of(wallet));
+
+        FundWalletRequest request = new FundWalletRequest();
+        request.setAmount(new  BigDecimal("0"));
+        assertThrows(WalletException.class, () -> walletService.fundWallet(user.getEmail(), request));
+    }
+
+    @Test
+    public void fundWallet_withNegativeAmount_shouldThrowWalletException() {
+        User user =  new User();
+        user.setEmail("Kesirat@gmail.com");
+        user.setFirstName("Kesirat");
+        user.setLastName("Amoke");
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+
+        Wallet wallet = new Wallet();
+        wallet.setAccountNumber("12345678901234567890");
+        wallet.setBalance(BigDecimal.ZERO);
+        wallet.setStatus(Status.ACTIVE);
+        wallet.setUser(user);
+
+        when(walletRepository.findByUserId(user.getId())).thenReturn(Optional.of(wallet));
+
+        FundWalletRequest request = new FundWalletRequest();
+        request.setAmount(new BigDecimal("-1000"));
+        assertThrows(WalletException.class, () -> walletService.fundWallet(user.getEmail(), request));
     }
 }

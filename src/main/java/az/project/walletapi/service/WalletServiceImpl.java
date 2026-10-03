@@ -5,6 +5,7 @@ import az.project.walletapi.data.model.User;
 import az.project.walletapi.data.model.Wallet;
 import az.project.walletapi.data.repository.UserRepository;
 import az.project.walletapi.data.repository.WalletRepository;
+import az.project.walletapi.dtos.request.FundWalletRequest;
 import az.project.walletapi.dtos.response.WalletResponse;
 import az.project.walletapi.exception.UserException;
 import az.project.walletapi.exception.WalletException;
@@ -49,6 +50,18 @@ public class WalletServiceImpl implements WalletService {
         Wallet foundWallet = walletRepository.findByUserId(user.getId()).orElseThrow(() -> new WalletException("Wallet does not exist"));
 
         return map(foundWallet);
+    }
+
+    @Override
+    public WalletResponse fundWallet(String email, FundWalletRequest request) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException("User not found"));
+        Wallet wallet = walletRepository.findByUserId(user.getId()).orElseThrow(() -> new WalletException("Wallet does not exist"));
+
+        if (request.getAmount().compareTo(BigDecimal.ZERO) <= 0) throw new WalletException("Amount must be greater than zero");
+        wallet.setBalance(wallet.getBalance().add(request.getAmount()));
+
+        Wallet updatedWallet = walletRepository.save(wallet);
+        return map(updatedWallet);
     }
 
     private String generateAccountNumber() {
