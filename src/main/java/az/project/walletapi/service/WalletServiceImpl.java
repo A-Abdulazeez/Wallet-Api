@@ -43,6 +43,14 @@ public class WalletServiceImpl implements WalletService {
         return map(savedWallet);
     }
 
+    @Override
+    public CreateWalletResponse getWallet(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException("User not found"));
+        Wallet foundWallet = walletRepository.findByUserId(user.getId()).orElseThrow(() -> new WalletException("Wallet does not exist"));
+
+        return map(foundWallet);
+    }
+
     private String generateAccountNumber() {
         SecureRandom secureRandom = new SecureRandom();
         String accountnumber;

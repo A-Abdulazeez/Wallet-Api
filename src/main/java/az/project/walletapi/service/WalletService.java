@@ -5,4 +5,6 @@ import az.project.walletapi.dtos.response.CreateWalletResponse;
 public interface WalletService {
 
     CreateWalletResponse createWallet (String email);
+
+    CreateWalletResponse getWallet(String email);
 }

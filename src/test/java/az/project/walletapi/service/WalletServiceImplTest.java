@@ -1,5 +1,6 @@
 package az.project.walletapi.service;
 
+import az.project.walletapi.data.model.Status;
 import az.project.walletapi.data.model.User;
 import az.project.walletapi.data.model.Wallet;
 import az.project.walletapi.data.repository.UserRepository;
@@ -13,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -75,4 +77,42 @@ public class WalletServiceImplTest {
         verify(walletRepository, never()).save(any(Wallet.class));
     }
 
+    @Test
+    public void getWallet_withExistingUserAndWallet_shouldReturnWallet() {
+        User user =  new User();
+        user.setEmail("Kesirat@gmail.com");
+        user.setFirstName("Kesirat");
+        user.setLastName("Amoke");
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+
+        Wallet wallet = new Wallet();
+        wallet.setAccountNumber("12345678901234567890");
+        wallet.setBalance(BigDecimal.ZERO);
+        wallet.setStatus(Status.ACTIVE);
+        wallet.setUser(user);
+
+        when(walletRepository.findByUserId(user.getId())).thenReturn(Optional.of(wallet));
+
+        CreateWalletResponse response = walletService.getWallet(user.getEmail());
+        assertEquals(20, response.getAccountNumber().length());
+        assertEquals(0, BigDecimal.ZERO.compareTo(response.getBalance()));
+        assertNotNull(response);
+    }
+
+    @Test
+    public void getWallet_withNonExistingUser_shouldThrowUserException() {
+        String email = "testing@gmail.com";
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+        assertThrows(UserException.class, () -> walletService.getWallet(email));
+    }
+
+    @Test
+    public void getWallet_withExistingUserButNoWallet_shouldThrowWalletException() {
+        User user =  new User();
+        user.setEmail("Tosin@gmail.com");
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+        when(walletRepository.findByUserId(user.getId())).thenReturn(Optional.empty());
+
+        assertThrows(WalletException.class, () -> walletService.getWallet(user.getEmail()));
+    }
 }
