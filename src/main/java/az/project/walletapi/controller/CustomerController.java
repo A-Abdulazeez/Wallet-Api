@@ -40,4 +40,12 @@ public class CustomerController {
         CreateWalletResponse response = walletService.createWallet(email);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
+    @GetMapping("/get-wallet")
+    public ResponseEntity<CreateWalletResponse> getWallet(Authentication authentication) {
+        String email = authentication.getName();
+
+        CreateWalletResponse response = walletService.getWallet(email);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 }
