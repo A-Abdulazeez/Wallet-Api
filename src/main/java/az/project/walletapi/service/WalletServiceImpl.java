@@ -6,9 +6,12 @@ import az.project.walletapi.data.model.Wallet;
 import az.project.walletapi.data.repository.UserRepository;
 import az.project.walletapi.data.repository.WalletRepository;
 import az.project.walletapi.dtos.request.FundWalletRequest;
+import az.project.walletapi.dtos.request.TransferFundsRequest;
+import az.project.walletapi.dtos.response.TransferResponse;
 import az.project.walletapi.dtos.response.WalletResponse;
 import az.project.walletapi.exception.UserException;
 import az.project.walletapi.exception.WalletException;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -62,6 +65,26 @@ public class WalletServiceImpl implements WalletService {
 
         Wallet updatedWallet = walletRepository.save(wallet);
         return map(updatedWallet);
+    }
+
+    @Transactional
+    @Override
+    public TransferResponse transferFunds(String senderEmail, TransferFundsRequest request) {
+        User user = userRepository.findByEmail(senderEmail).orElseThrow(() -> new UserException("User not found"));
+        Wallet senderWallet  = walletRepository.findByUserId(user.getId()).orElseThrow(() -> new WalletException("Wallet does not exist"));
+
+        Wallet receiverWallet =  walletRepository.findByAccountNumber(request.getReceiverAccountNumber()).orElseThrow(() -> new WalletException("Receiver Wallet does not exist"));
+        if (senderWallet.getAccountNumber().equals(receiverWallet.getAccountNumber())) throw new WalletException("Cannot transfer to the same wallet");
+        if (request.getAmount().compareTo(BigDecimal.ZERO) <= 0) throw new WalletException("Amount must be greater than zero");
+        if (senderWallet.getBalance().compareTo(BigDecimal.ZERO) <= 0) throw new WalletException("Sender Balance must be greater than zero");
+        if (senderWallet.getBalance().compareTo(request.getAmount()) < 0) throw new WalletException("Insufficient balance");
+        senderWallet.setBalance(senderWallet.getBalance().subtract(request.getAmount()));
+        receiverWallet.setBalance(receiverWallet.getBalance().add(request.getAmount()));
+
+        Wallet updatedSenderWallet = walletRepository.save(senderWallet);
+        Wallet updatedReceiverWallet = walletRepository.save(receiverWallet);
+
+        return map(updatedSenderWallet, updatedReceiverWallet, request.getAmount());
     }
 
     private String generateAccountNumber() {

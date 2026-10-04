@@ -5,10 +5,9 @@ import az.project.walletapi.data.model.Status;
 import az.project.walletapi.data.model.User;
 import az.project.walletapi.data.model.Wallet;
 import az.project.walletapi.dtos.request.RegisterCustomerRequest;
-import az.project.walletapi.dtos.response.WalletResponse;
-import az.project.walletapi.dtos.response.CustomerProfileResponse;
-import az.project.walletapi.dtos.response.LoginCustomerResponse;
-import az.project.walletapi.dtos.response.RegisterCustomerResponse;
+import az.project.walletapi.dtos.response.*;
+
+import java.math.BigDecimal;
 
 public class Mapper {
 
@@ -53,6 +52,17 @@ public class Mapper {
         response.setAccountNumber(wallet.getAccountNumber());
         response.setBalance(wallet.getBalance());
         response.setStatus(Status.ACTIVE);
+        return response;
+    }
+
+    public static TransferResponse map(Wallet senderWallet, Wallet receiverWallet, BigDecimal amount) {
+        TransferResponse response = new TransferResponse();
+        response.setSenderAccountNumber(senderWallet.getAccountNumber());
+        response.setReceiverAccountNumber(receiverWallet.getAccountNumber());
+        response.setAmount(amount);
+        response.setSenderBalance(senderWallet.getBalance());
+        response.setMessage("Transfer successful");
+
         return response;
     }
 }
