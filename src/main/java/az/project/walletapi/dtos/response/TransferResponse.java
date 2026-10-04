@@ -1,6 +1,5 @@
 package az.project.walletapi.dtos.response;
 
-import az.project.walletapi.data.model.Wallet;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -11,5 +10,6 @@ public class TransferResponse {
     private String receiverAccountNumber;
     private BigDecimal amount;
     private BigDecimal senderBalance;
+    private String reference;
     private String message;
 }
