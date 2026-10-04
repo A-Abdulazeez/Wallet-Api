@@ -4,6 +4,7 @@ import az.project.walletapi.data.model.Role;
 import az.project.walletapi.data.model.Status;
 import az.project.walletapi.data.model.User;
 import az.project.walletapi.data.model.Wallet;
+import az.project.walletapi.data.model.Transaction;
 import az.project.walletapi.dtos.request.RegisterCustomerRequest;
 import az.project.walletapi.dtos.response.*;
 
@@ -55,14 +56,29 @@ public class Mapper {
         return response;
     }
 
-    public static TransferResponse map(Wallet senderWallet, Wallet receiverWallet, BigDecimal amount) {
+    public static TransferResponse map(Wallet senderWallet, Wallet receiverWallet, BigDecimal amount, String reference) {
         TransferResponse response = new TransferResponse();
         response.setSenderAccountNumber(senderWallet.getAccountNumber());
         response.setReceiverAccountNumber(receiverWallet.getAccountNumber());
         response.setAmount(amount);
         response.setSenderBalance(senderWallet.getBalance());
+        response.setReference(reference);
         response.setMessage("Transfer successful");
 
         return response;
     }
+    public static TransactionResponse map(Transaction transaction) {
+        TransactionResponse response = new TransactionResponse();
+        response.setReference(transaction.getReference());
+        response.setType(transaction.getType());
+        response.setStatus(transaction.getStatus());
+        response.setAmount(transaction.getAmount());
+        response.setCreatedAt(transaction.getCreatedAt());
+        if (transaction.getSenderWallet() != null) {
+            response.setSenderAccountNumber(transaction.getSenderWallet().getAccountNumber());
+        }
+        response.setReceiverAccountNumber(transaction.getReceiverWallet().getAccountNumber());
+        return response;
+    }
+
 }
