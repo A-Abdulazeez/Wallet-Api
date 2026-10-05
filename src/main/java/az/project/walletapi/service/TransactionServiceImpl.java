@@ -6,6 +6,7 @@ import az.project.walletapi.data.repository.UserRepository;
 import az.project.walletapi.data.repository.WalletRepository;
 import az.project.walletapi.dtos.request.FundWalletRequest;
 import az.project.walletapi.dtos.request.TransferFundsRequest;
+import az.project.walletapi.dtos.request.WithdrawRequest;
 import az.project.walletapi.dtos.response.TransactionResponse;
 import az.project.walletapi.dtos.response.TransferResponse;
 import az.project.walletapi.dtos.response.WalletResponse;
@@ -92,6 +93,27 @@ public class TransactionServiceImpl implements TransactionService {
                 .stream()
                 .map(az.project.walletapi.utils.Mapper::map)
                 .toList();
+    }
+
+    @Transactional
+    @Override
+    public WalletResponse withdraw (String email, WithdrawRequest request) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException("User not found"));
+        Wallet wallet = walletRepository.findByUserId(user.getId()).orElseThrow(() -> new WalletException("Wallet does not exist"));
+        validateAmount(request.getAmount());
+        if (wallet.getBalance().compareTo(request.getAmount()) < 0) throw new WalletException("Insufficient balance");
+        wallet.setBalance(wallet.getBalance().subtract(request.getAmount()));
+
+        Wallet  updatedWallet = walletRepository.save(wallet);
+
+        Transaction transaction = new Transaction();
+        transaction.setType(TransactionType.WITHDRAW);
+        transaction.setStatus(TransactionStatus.SUCCESSFUL);
+        transaction.setAmount(request.getAmount());
+        transaction.setSenderWallet(updatedWallet);
+        transactionRepository.save(transaction);
+
+        return map(updatedWallet);
     }
 
     private void validateAmount(BigDecimal amount) {

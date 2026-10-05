@@ -6,6 +6,7 @@ import az.project.walletapi.data.repository.UserRepository;
 import az.project.walletapi.data.repository.WalletRepository;
 import az.project.walletapi.dtos.request.FundWalletRequest;
 import az.project.walletapi.dtos.request.TransferFundsRequest;
+import az.project.walletapi.dtos.request.WithdrawRequest;
 import az.project.walletapi.dtos.response.TransferResponse;
 import az.project.walletapi.dtos.response.WalletResponse;
 import az.project.walletapi.exception.UserException;
@@ -108,6 +109,48 @@ public class TransactionServiceImplTest {
         assertThrows(WalletException.class, () -> transactionService.transferFunds(sender.getEmail(), request));
         verify(walletRepository, never()).save(any());
         verify(transactionRepository, never()).save(any());
+    }
+
+    @Test
+    public void withdrawFromWallet_withValidAmount_shouldUpdateBalanceAndSaveTransaction() {
+        User user = user("atoz@gmail.com");
+        Wallet wallet = wallet("12345678901234567890", "6000", user);
+
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+        when(walletRepository.findByUserId(user.getId())).thenReturn(Optional.of(wallet));
+        when(walletRepository.save(any(Wallet.class))).thenAnswer(i -> i.getArgument(0));
+        when(transactionRepository.save(any(Transaction.class))).thenAnswer(i -> i.getArgument(0));
+
+        WithdrawRequest requestWithdraw = new WithdrawRequest();
+        requestWithdraw.setAmount(new BigDecimal("3000"));
+
+        WalletResponse response = transactionService.withdraw(user.getEmail(), requestWithdraw);
+        assertEquals(0, new BigDecimal("3000").compareTo(response.getBalance()));
+
+    }
+
+    @Test
+    public void withdrawFromWallet_withNonExistingUser_shouldThrowUserException() {
+        when(userRepository.findByEmail("fakeemail@gmail.com")).thenReturn(Optional.empty());
+        WithdrawRequest requestWithdraw = new WithdrawRequest();
+        requestWithdraw.setAmount(new BigDecimal("3000"));
+        assertThrows(UserException.class, () -> transactionService.withdraw("fakeemail@gmail.com", requestWithdraw));
+        verify(transactionRepository, never()).save(any());
+
+    }
+
+    @Test
+    public void withdrawFromWallet_withInsuffficientBalance_shouldThrowWalletException() {
+        User user = user("atoz@gmail.com");
+        Wallet wallet = wallet("12345678901234567890", "6000", user);
+
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+        when(walletRepository.findByUserId(user.getId())).thenReturn(Optional.of(wallet));
+
+        WithdrawRequest requestWithdraw = new WithdrawRequest();
+        requestWithdraw.setAmount(new BigDecimal("7000"));
+
+        assertThrows(WalletException.class, () -> transactionService.withdraw(user.getEmail(), requestWithdraw));
     }
 
     private User user(String email) {
