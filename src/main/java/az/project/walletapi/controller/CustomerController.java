@@ -2,6 +2,7 @@ package az.project.walletapi.controller;
 
 import az.project.walletapi.dtos.request.FundWalletRequest;
 import az.project.walletapi.dtos.request.TransferFundsRequest;
+import az.project.walletapi.dtos.request.WithdrawRequest;
 import az.project.walletapi.dtos.response.*;
 import az.project.walletapi.service.CustomerService;
 import az.project.walletapi.service.TransactionService;
@@ -51,5 +52,10 @@ public class CustomerController {
     @GetMapping("/transactions")
     public ResponseEntity<List<TransactionResponse>> getTransactions(Authentication authentication) {
         return ResponseEntity.ok(transactionService.getTransactions(authentication.getName()));
+    }
+
+    @PatchMapping("/withdraw")
+    public ResponseEntity<WalletResponse> withdraw(Authentication authentication, @Valid @RequestBody WithdrawRequest request) {
+        return ResponseEntity.ok(transactionService.withdraw(authentication.getName(), request));
     }
 }
