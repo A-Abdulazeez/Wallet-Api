@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
-public class AdminCustomerListResponse {
+public class AdminCustomerResponse {
     private UUID id;
     private String firstName;
     private String lastName;

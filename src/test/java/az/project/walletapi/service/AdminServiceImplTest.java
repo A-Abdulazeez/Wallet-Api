@@ -3,7 +3,7 @@ package az.project.walletapi.service;
 import az.project.walletapi.data.model.Role;
 import az.project.walletapi.data.model.User;
 import az.project.walletapi.data.repository.UserRepository;
-import az.project.walletapi.dtos.response.AdminCustomerListResponse;
+import az.project.walletapi.dtos.response.AdminCustomerResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -43,7 +43,7 @@ public class AdminServiceImplTest {
 
         when(userRepository.findAllByRole(Role.CUSTOMER)).thenReturn(List.of(customer1, customer2));
 
-        List<AdminCustomerListResponse> response = adminService.getAllCustomers();
+        List<AdminCustomerResponse> response = adminService.getAllCustomers();
         assertEquals(2, response.size());
 
     }
@@ -51,7 +51,7 @@ public class AdminServiceImplTest {
     @Test
     public void getAllCustomers_whenNoCustomersExist_shouldReturnEmptyList() {
 //        when(userRepository.findAll()).thenReturn(List.of());
-        List<AdminCustomerListResponse> response = adminService.getAllCustomers();
+        List<AdminCustomerResponse> response = adminService.getAllCustomers();
         assertEquals(0, response.size());
     }
 

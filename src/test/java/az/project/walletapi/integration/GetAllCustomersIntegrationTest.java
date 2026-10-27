@@ -3,7 +3,7 @@ package az.project.walletapi.integration;
 import az.project.walletapi.data.model.User;
 import az.project.walletapi.data.repository.UserRepository;
 import az.project.walletapi.dtos.request.RegisterCustomerRequest;
-import az.project.walletapi.dtos.response.AdminCustomerListResponse;
+import az.project.walletapi.dtos.response.AdminCustomerResponse;
 import az.project.walletapi.service.AdminService;
 import az.project.walletapi.service.AuthService;
 import org.junit.jupiter.api.Test;
@@ -46,13 +46,13 @@ public class GetAllCustomersIntegrationTest {
         authService.registerCustomer(SecondRegisterRequest);
         User secondUser = userRepository.findByEmail(SecondRegisterRequest.getEmail()).orElseThrow();
 
-        List<AdminCustomerListResponse> allCustomers = adminService.getAllCustomers();
+        List<AdminCustomerResponse> allCustomers = adminService.getAllCustomers();
         assertEquals(2,allCustomers.size());
     }
 
     @Test
     public void getAllCustomersWhenNoCustomersExistReturnEmptyList() {
-        List<AdminCustomerListResponse> allCustomers = adminService.getAllCustomers();
+        List<AdminCustomerResponse> allCustomers = adminService.getAllCustomers();
         assertEquals(0,allCustomers.size());
     }
 

@@ -1,12 +1,12 @@
 package az.project.walletapi.service;
 
-import az.project.walletapi.dtos.response.AdminCustomerListResponse;
+import az.project.walletapi.dtos.response.AdminCustomerResponse;
 
 import java.util.List;
 
 public interface AdminService {
 
-    List<AdminCustomerListResponse> getAllCustomers();
+    List<AdminCustomerResponse> getAllCustomers();
 
 
 }

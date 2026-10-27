@@ -81,8 +81,8 @@ public class Mapper {
         return response;
     }
 
-    public static AdminCustomerListResponse mapToAdmin(User user) {
-        AdminCustomerListResponse response = new AdminCustomerListResponse();
+    public static AdminCustomerResponse mapToAdmin(User user) {
+        AdminCustomerResponse response = new AdminCustomerResponse();
         response.setId(user.getId());
         response.setFirstName(user.getFirstName());
         response.setLastName(user.getLastName());
