@@ -7,6 +7,7 @@ import java.util.List;
 public interface AdminService {
 
     List<AdminCustomerResponse> getAllCustomers();
+    AdminCustomerResponse getCustomerByEmail(String email);
 
 
 }
