@@ -2,6 +2,7 @@ package az.project.walletapi.controller;
 
 import az.project.walletapi.dtos.response.AdminCustomerResponse;
 import az.project.walletapi.dtos.response.AdminWalletResponse;
+import az.project.walletapi.dtos.response.TransactionResponse;
 import az.project.walletapi.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +38,21 @@ public class AdminController {
     @GetMapping("/wallets/{accountNumber}")
     public ResponseEntity<AdminWalletResponse> getWalletByAccountNumber(@PathVariable String accountNumber) {
         return ResponseEntity.ok(adminService.getWalletByAccountNumber(accountNumber));
+    }
+
+    @GetMapping("/transactions")
+    public ResponseEntity<List<TransactionResponse>> getAllTransactions() {
+        return ResponseEntity.ok(adminService.getAllTransactions());
+    }
+
+    @GetMapping("/transactions/{reference}")
+    public ResponseEntity<TransactionResponse> getTransactionByReference(@PathVariable String reference) {
+        return ResponseEntity.ok(adminService.getTransactionByReference(reference));
+    }
+
+    @GetMapping("/wallets/{accountNumber}/transactions")
+    public ResponseEntity<List<TransactionResponse>> getTransactionsByWallet(@PathVariable String accountNumber) {
+        return ResponseEntity.ok(adminService.getTransactionsByWallet(accountNumber));
     }
 
 }
