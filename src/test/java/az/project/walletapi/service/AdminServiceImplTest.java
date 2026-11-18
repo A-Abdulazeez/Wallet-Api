@@ -268,4 +268,82 @@ public class AdminServiceImplTest {
         assertThrows(WalletException.class, () -> adminService.getTransactionsByWallet(accountNumber));
     }
 
+    @Test
+    public void freezeWallet_whenWalletExistsAndActive_shouldFreezeWallet() {
+        User user = new User();
+        user.setEmail("az@gmail.com");
+
+        Wallet wallet = new Wallet();
+        wallet.setId(UUID.randomUUID());
+        wallet.setAccountNumber("12345678901234567890");
+        wallet.setBalance(new BigDecimal("5000.00"));
+        wallet.setStatus(Status.ACTIVE);
+        wallet.setUser(user);
+
+        when(walletRepository.findByAccountNumber(wallet.getAccountNumber())).thenReturn(Optional.of(wallet));
+        when(walletRepository.save(wallet)).thenReturn(wallet);
+
+        AdminWalletResponse response = adminService.freezeWallet(wallet.getAccountNumber());
+        assertEquals(Status.FROZEN, response.getStatus());
+        assertEquals(Status.FROZEN, wallet.getStatus());
+    }
+
+    @Test
+    public void freezeWallet_whenWalletIsAlreadyFrozen_shouldThrowException() {
+        Wallet wallet = new Wallet();
+        wallet.setAccountNumber("12345678901234567890");
+        wallet.setStatus(Status.FROZEN);
+
+        when(walletRepository.findByAccountNumber(wallet.getAccountNumber())).thenReturn(Optional.of(wallet));
+
+        assertThrows(WalletException.class, () -> adminService.freezeWallet(wallet.getAccountNumber()));
+    }
+
+    @Test
+    public void freezeWallet_whenWalletDoesNotExist_shouldThrowException() {
+        String accountNumber = "nonexistent";
+        when(walletRepository.findByAccountNumber(accountNumber)).thenReturn(Optional.empty());
+
+        assertThrows(WalletException.class, () -> adminService.freezeWallet(accountNumber));
+    }
+
+    @Test
+    public void unfreezeWallet_whenWalletExistsAndFrozen_shouldUnfreezeWallet() {
+        User user = new User();
+        user.setEmail("az@gmail.com");
+
+        Wallet wallet = new Wallet();
+        wallet.setId(UUID.randomUUID());
+        wallet.setAccountNumber("12345678901234567890");
+        wallet.setBalance(new BigDecimal("5000.00"));
+        wallet.setStatus(Status.FROZEN);
+        wallet.setUser(user);
+
+        when(walletRepository.findByAccountNumber(wallet.getAccountNumber())).thenReturn(Optional.of(wallet));
+        when(walletRepository.save(wallet)).thenReturn(wallet);
+
+        AdminWalletResponse response = adminService.unfreezeWallet(wallet.getAccountNumber());
+        assertEquals(Status.ACTIVE, response.getStatus());
+        assertEquals(Status.ACTIVE, wallet.getStatus());
+    }
+
+    @Test
+    public void unfreezeWallet_whenWalletIsAlreadyActive_shouldThrowException() {
+        Wallet wallet = new Wallet();
+        wallet.setAccountNumber("12345678901234567890");
+        wallet.setStatus(Status.ACTIVE);
+
+        when(walletRepository.findByAccountNumber(wallet.getAccountNumber())).thenReturn(Optional.of(wallet));
+
+        assertThrows(WalletException.class, () -> adminService.unfreezeWallet(wallet.getAccountNumber()));
+    }
+
+    @Test
+    public void unfreezeWallet_whenWalletDoesNotExist_shouldThrowException() {
+        String accountNumber = "nonexistent";
+        when(walletRepository.findByAccountNumber(accountNumber)).thenReturn(Optional.empty());
+
+        assertThrows(WalletException.class, () -> adminService.unfreezeWallet(accountNumber));
+    }
+
 }
