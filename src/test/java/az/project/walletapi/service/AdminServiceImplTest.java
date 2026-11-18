@@ -67,7 +67,7 @@ public class AdminServiceImplTest {
         customer1.setEmail("az@gmail.com");
         customer1.setRole(Role.CUSTOMER);
 
-        when(userRepository.findByEmail(customer1.getEmail())).thenReturn(Optional.of(customer1));
+        when(userRepository.findByEmailAndRole(customer1.getEmail(), Role.CUSTOMER)).thenReturn(Optional.of(customer1));
 
         AdminCustomerResponse response = adminService.getCustomerByEmail(customer1.getEmail());
         assertEquals("Azeez", response.getFirstName());
@@ -78,7 +78,7 @@ public class AdminServiceImplTest {
     @Test
     public void getCustomerByEmail_whenCustomerDoesNotExist_shouldThrowException() {
         String email =  "mail@email.com";
-        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+        when(userRepository.findByEmailAndRole(email, Role.CUSTOMER)).thenReturn(Optional.empty());
 
         assertThrows(UserException.class, ()-> adminService.getCustomerByEmail(email));
     }
