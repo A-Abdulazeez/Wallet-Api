@@ -40,6 +40,10 @@ public class TransactionServiceImpl implements TransactionService {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException("User not found"));
         Wallet wallet = walletRepository.findByUserId(user.getId()).orElseThrow(() -> new WalletException("Wallet does not exist"));
 
+        if (wallet.getStatus() == Status.FROZEN) {
+            throw new WalletException("Wallet is frozen");
+        }
+
         validateAmount(request.getAmount());
         wallet.setBalance(wallet.getBalance().add(request.getAmount()));
         Wallet updatedWallet = walletRepository.save(wallet);
@@ -60,6 +64,13 @@ public class TransactionServiceImpl implements TransactionService {
         User user = userRepository.findByEmail(senderEmail).orElseThrow(() -> new UserException("User not found"));
         Wallet senderWallet = walletRepository.findByUserId(user.getId()).orElseThrow(() -> new WalletException("Wallet does not exist"));
         Wallet receiverWallet = walletRepository.findByAccountNumber(request.getReceiverAccountNumber()).orElseThrow(() -> new WalletException("Receiver Wallet does not exist"));
+
+        if (senderWallet.getStatus() == Status.FROZEN) {
+            throw new WalletException("Sender wallet is frozen");
+        }
+        if (receiverWallet.getStatus() == Status.FROZEN) {
+            throw new WalletException("Receiver wallet is frozen");
+        }
 
         if (senderWallet.getAccountNumber().equals(receiverWallet.getAccountNumber())) throw new WalletException("Cannot transfer to the same wallet");
         validateAmount(request.getAmount());
@@ -100,6 +111,11 @@ public class TransactionServiceImpl implements TransactionService {
     public WalletResponse withdraw (String email, WithdrawRequest request) {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new UserException("User not found"));
         Wallet wallet = walletRepository.findByUserId(user.getId()).orElseThrow(() -> new WalletException("Wallet does not exist"));
+
+        if (wallet.getStatus() == Status.FROZEN) {
+            throw new WalletException("Wallet is frozen");
+        }
+
         validateAmount(request.getAmount());
         if (wallet.getBalance().compareTo(request.getAmount()) < 0) throw new WalletException("Insufficient balance");
         wallet.setBalance(wallet.getBalance().subtract(request.getAmount()));
