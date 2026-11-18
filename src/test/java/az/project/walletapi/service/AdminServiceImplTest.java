@@ -1,16 +1,22 @@
 package az.project.walletapi.service;
 
 import az.project.walletapi.data.model.Role;
+import az.project.walletapi.data.model.Status;
 import az.project.walletapi.data.model.User;
+import az.project.walletapi.data.model.Wallet;
 import az.project.walletapi.data.repository.UserRepository;
+import az.project.walletapi.data.repository.WalletRepository;
 import az.project.walletapi.dtos.response.AdminCustomerResponse;
+import az.project.walletapi.dtos.response.AdminWalletResponse;
 import az.project.walletapi.exception.UserException;
+import az.project.walletapi.exception.WalletException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,6 +30,9 @@ public class AdminServiceImplTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private WalletRepository walletRepository;
 
     @InjectMocks
     private AdminServiceImpl adminService;
@@ -95,6 +104,68 @@ public class AdminServiceImplTest {
         when(userRepository.findByEmailAndRole(admin.getEmail(), Role.CUSTOMER)).thenReturn(Optional.empty());
         assertThrows(UserException.class, ()-> adminService.getCustomerByEmail(admin.getEmail()));
 
+    }
+
+    @Test
+    public void getAllWallets_whenWalletsExist_shouldReturnWalletList() {
+        User user = new User();
+        user.setEmail("az@gmail.com");
+
+        Wallet wallet1 = new Wallet();
+        wallet1.setId(UUID.randomUUID());
+        wallet1.setAccountNumber("12345678901234567890");
+        wallet1.setBalance(new BigDecimal("5000.00"));
+        wallet1.setStatus(Status.ACTIVE);
+        wallet1.setUser(user);
+
+        Wallet wallet2 = new Wallet();
+        wallet2.setId(UUID.randomUUID());
+        wallet2.setAccountNumber("09876543210987654321");
+        wallet2.setBalance(new BigDecimal("10000.00"));
+        wallet2.setStatus(Status.ACTIVE);
+        wallet2.setUser(user);
+
+        when(walletRepository.findAll()).thenReturn(List.of(wallet1, wallet2));
+
+        List<AdminWalletResponse> response = adminService.getAllWallets();
+        assertEquals(2, response.size());
+    }
+
+    @Test
+    public void getAllWallets_whenNoWalletsExist_shouldReturnEmptyList() {
+        when(walletRepository.findAll()).thenReturn(List.of());
+
+        List<AdminWalletResponse> response = adminService.getAllWallets();
+        assertEquals(0, response.size());
+    }
+
+    @Test
+    public void getWalletByAccountNumber_whenWalletExists_shouldReturnWallet() {
+        User user = new User();
+        user.setEmail("az@gmail.com");
+
+        Wallet wallet = new Wallet();
+        wallet.setId(UUID.randomUUID());
+        wallet.setAccountNumber("12345678901234567890");
+        wallet.setBalance(new BigDecimal("5000.00"));
+        wallet.setStatus(Status.ACTIVE);
+        wallet.setUser(user);
+
+        when(walletRepository.findByAccountNumber(wallet.getAccountNumber())).thenReturn(Optional.of(wallet));
+
+        AdminWalletResponse response = adminService.getWalletByAccountNumber(wallet.getAccountNumber());
+        assertEquals(wallet.getAccountNumber(), response.getAccountNumber());
+        assertEquals(wallet.getBalance(), response.getBalance());
+        assertEquals(Status.ACTIVE, response.getStatus());
+        assertEquals("az@gmail.com", response.getCustomerEmail());
+    }
+
+    @Test
+    public void getWalletByAccountNumber_whenWalletDoesNotExist_shouldThrowException() {
+        String accountNumber = "nonexistent";
+        when(walletRepository.findByAccountNumber(accountNumber)).thenReturn(Optional.empty());
+
+        assertThrows(WalletException.class, () -> adminService.getWalletByAccountNumber(accountNumber));
     }
 
 }
