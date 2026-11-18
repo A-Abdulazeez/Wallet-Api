@@ -15,4 +15,6 @@ public interface AdminService {
     List<TransactionResponse> getAllTransactions();
     TransactionResponse getTransactionByReference(String reference);
     List<TransactionResponse> getTransactionsByWallet(String accountNumber);
+    AdminWalletResponse freezeWallet(String accountNumber);
+    AdminWalletResponse unfreezeWallet(String accountNumber);
 }

@@ -1,6 +1,7 @@
 package az.project.walletapi.service;
 
 import az.project.walletapi.data.model.Role;
+import az.project.walletapi.data.model.Status;
 import az.project.walletapi.data.model.Transaction;
 import az.project.walletapi.data.model.User;
 import az.project.walletapi.data.model.Wallet;
@@ -78,6 +79,34 @@ public class AdminServiceImpl implements AdminService {
                 .stream()
                 .map(az.project.walletapi.utils.Mapper::map)
                 .toList();
+    }
+
+    @Override
+    public AdminWalletResponse freezeWallet(String accountNumber) {
+        Wallet wallet = walletRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new WalletException("Wallet does not exist"));
+
+        if (wallet.getStatus() == Status.FROZEN) {
+            throw new WalletException("Wallet is already frozen");
+        }
+
+        wallet.setStatus(Status.FROZEN);
+        Wallet savedWallet = walletRepository.save(wallet);
+        return mapToAdmin(savedWallet);
+    }
+
+    @Override
+    public AdminWalletResponse unfreezeWallet(String accountNumber) {
+        Wallet wallet = walletRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new WalletException("Wallet does not exist"));
+
+        if (wallet.getStatus() == Status.ACTIVE) {
+            throw new WalletException("Wallet is already active");
+        }
+
+        wallet.setStatus(Status.ACTIVE);
+        Wallet savedWallet = walletRepository.save(wallet);
+        return mapToAdmin(savedWallet);
     }
 
 }
