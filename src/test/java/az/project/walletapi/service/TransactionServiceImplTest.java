@@ -153,6 +153,80 @@ public class TransactionServiceImplTest {
         assertThrows(WalletException.class, () -> transactionService.withdraw(user.getEmail(), requestWithdraw));
     }
 
+    @Test
+    public void fundWallet_whenWalletIsFrozen_shouldThrowWalletException() {
+        User user = user("sender@gmail.com");
+        Wallet wallet = wallet("12345678901234567890", "1000", user);
+        wallet.setStatus(Status.FROZEN);
+
+        FundWalletRequest request = new FundWalletRequest();
+        request.setAmount(new BigDecimal("500"));
+
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+        when(walletRepository.findByUserId(user.getId())).thenReturn(Optional.of(wallet));
+
+        assertThrows(WalletException.class, () -> transactionService.fundWallet(user.getEmail(), request));
+        verify(walletRepository, never()).save(any());
+        verify(transactionRepository, never()).save(any());
+    }
+
+    @Test
+    public void transferFunds_whenSenderWalletIsFrozen_shouldThrowWalletException() {
+        User sender = user("sender@gmail.com");
+        Wallet senderWallet = wallet("12345678901234567890", "10000", sender);
+        senderWallet.setStatus(Status.FROZEN);
+        Wallet receiverWallet = wallet("98765432109876543210", "2000", user("receiver@gmail.com"));
+
+        TransferFundsRequest request = new TransferFundsRequest();
+        request.setReceiverAccountNumber(receiverWallet.getAccountNumber());
+        request.setAmount(new BigDecimal("3000"));
+
+        when(userRepository.findByEmail(sender.getEmail())).thenReturn(Optional.of(sender));
+        when(walletRepository.findByUserId(sender.getId())).thenReturn(Optional.of(senderWallet));
+        when(walletRepository.findByAccountNumber(receiverWallet.getAccountNumber())).thenReturn(Optional.of(receiverWallet));
+
+        assertThrows(WalletException.class, () -> transactionService.transferFunds(sender.getEmail(), request));
+        verify(walletRepository, never()).save(any());
+        verify(transactionRepository, never()).save(any());
+    }
+
+    @Test
+    public void transferFunds_whenReceiverWalletIsFrozen_shouldThrowWalletException() {
+        User sender = user("sender@gmail.com");
+        Wallet senderWallet = wallet("12345678901234567890", "10000", sender);
+        Wallet receiverWallet = wallet("98765432109876543210", "2000", user("receiver@gmail.com"));
+        receiverWallet.setStatus(Status.FROZEN);
+
+        TransferFundsRequest request = new TransferFundsRequest();
+        request.setReceiverAccountNumber(receiverWallet.getAccountNumber());
+        request.setAmount(new BigDecimal("3000"));
+
+        when(userRepository.findByEmail(sender.getEmail())).thenReturn(Optional.of(sender));
+        when(walletRepository.findByUserId(sender.getId())).thenReturn(Optional.of(senderWallet));
+        when(walletRepository.findByAccountNumber(receiverWallet.getAccountNumber())).thenReturn(Optional.of(receiverWallet));
+
+        assertThrows(WalletException.class, () -> transactionService.transferFunds(sender.getEmail(), request));
+        verify(walletRepository, never()).save(any());
+        verify(transactionRepository, never()).save(any());
+    }
+
+    @Test
+    public void withdrawFromWallet_whenWalletIsFrozen_shouldThrowWalletException() {
+        User user = user("atoz@gmail.com");
+        Wallet wallet = wallet("12345678901234567890", "6000", user);
+        wallet.setStatus(Status.FROZEN);
+
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+        when(walletRepository.findByUserId(user.getId())).thenReturn(Optional.of(wallet));
+
+        WithdrawRequest requestWithdraw = new WithdrawRequest();
+        requestWithdraw.setAmount(new BigDecimal("3000"));
+
+        assertThrows(WalletException.class, () -> transactionService.withdraw(user.getEmail(), requestWithdraw));
+        verify(walletRepository, never()).save(any());
+        verify(transactionRepository, never()).save(any());
+    }
+
     private User user(String email) {
         User user = new User();
         user.setEmail(email);
