@@ -52,7 +52,7 @@ public class Mapper {
         WalletResponse response = new WalletResponse();
         response.setAccountNumber(wallet.getAccountNumber());
         response.setBalance(wallet.getBalance());
-        response.setStatus(Status.ACTIVE);
+        response.setStatus(wallet.getStatus());
         return response;
     }
 
@@ -90,6 +90,19 @@ public class Mapper {
         response.setRole(user.getRole());
         response.setCreatedAt(user.getCreatedAt());
 
+        return response;
+    }
+
+    public static AdminWalletResponse mapToAdmin(Wallet wallet) {
+        AdminWalletResponse response = new AdminWalletResponse();
+        response.setId(wallet.getId());
+        response.setAccountNumber(wallet.getAccountNumber());
+        response.setBalance(wallet.getBalance());
+        response.setStatus(wallet.getStatus());
+        response.setCreatedAt(wallet.getCreatedAt());
+        if (wallet.getUser() != null) {
+            response.setCustomerEmail(wallet.getUser().getEmail());
+        }
         return response;
     }
 
