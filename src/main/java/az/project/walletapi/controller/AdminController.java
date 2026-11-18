@@ -7,6 +7,7 @@ import az.project.walletapi.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -53,6 +54,16 @@ public class AdminController {
     @GetMapping("/wallets/{accountNumber}/transactions")
     public ResponseEntity<List<TransactionResponse>> getTransactionsByWallet(@PathVariable String accountNumber) {
         return ResponseEntity.ok(adminService.getTransactionsByWallet(accountNumber));
+    }
+
+    @PatchMapping("/wallets/{accountNumber}/freeze")
+    public ResponseEntity<AdminWalletResponse> freezeWallet(@PathVariable String accountNumber) {
+        return ResponseEntity.ok(adminService.freezeWallet(accountNumber));
+    }
+
+    @PatchMapping("/wallets/{accountNumber}/unfreeze")
+    public ResponseEntity<AdminWalletResponse> unfreezeWallet(@PathVariable String accountNumber) {
+        return ResponseEntity.ok(adminService.unfreezeWallet(accountNumber));
     }
 
 }
