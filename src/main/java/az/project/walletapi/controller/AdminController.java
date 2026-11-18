@@ -5,6 +5,7 @@ import az.project.walletapi.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,6 +21,11 @@ public class AdminController {
     @GetMapping("/customers")
     public ResponseEntity<List<AdminCustomerResponse>> getAllCustomers() {
         return ResponseEntity.ok(adminService.getAllCustomers());
+    }
+
+    @GetMapping("/customers/{email}")
+    public ResponseEntity<AdminCustomerResponse> getCustomerByEmail(@PathVariable String email) {
+        return ResponseEntity.ok(adminService.getCustomerByEmail(email));
     }
 
 }
