@@ -1,13 +1,12 @@
 package az.project.walletapi.service;
 
-import az.project.walletapi.data.model.Role;
-import az.project.walletapi.data.model.Status;
-import az.project.walletapi.data.model.User;
-import az.project.walletapi.data.model.Wallet;
+import az.project.walletapi.data.model.*;
+import az.project.walletapi.data.repository.TransactionRepository;
 import az.project.walletapi.data.repository.UserRepository;
 import az.project.walletapi.data.repository.WalletRepository;
 import az.project.walletapi.dtos.response.AdminCustomerResponse;
 import az.project.walletapi.dtos.response.AdminWalletResponse;
+import az.project.walletapi.dtos.response.TransactionResponse;
 import az.project.walletapi.exception.UserException;
 import az.project.walletapi.exception.WalletException;
 import org.junit.jupiter.api.Test;
@@ -17,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -33,6 +33,9 @@ public class AdminServiceImplTest {
 
     @Mock
     private WalletRepository walletRepository;
+
+    @Mock
+    private TransactionRepository transactionRepository;
 
     @InjectMocks
     private AdminServiceImpl adminService;
@@ -166,6 +169,103 @@ public class AdminServiceImplTest {
         when(walletRepository.findByAccountNumber(accountNumber)).thenReturn(Optional.empty());
 
         assertThrows(WalletException.class, () -> adminService.getWalletByAccountNumber(accountNumber));
+    }
+
+    @Test
+    public void getAllTransactions_whenTransactionsExist_shouldReturnTransactionList() {
+        Wallet sender = new Wallet();
+        sender.setAccountNumber("11111111111111111111");
+        Wallet receiver = new Wallet();
+        receiver.setAccountNumber("22222222222222222222");
+
+        Transaction tx1 = new Transaction();
+        tx1.setReference("ref1");
+        tx1.setType(TransactionType.TRANSFER);
+        tx1.setStatus(TransactionStatus.SUCCESSFUL);
+        tx1.setAmount(new BigDecimal("1000.00"));
+        tx1.setSenderWallet(sender);
+        tx1.setReceiverWallet(receiver);
+        tx1.setCreatedAt(LocalDateTime.now());
+
+        Transaction tx2 = new Transaction();
+        tx2.setReference("ref2");
+        tx2.setType(TransactionType.FUNDING);
+        tx2.setStatus(TransactionStatus.SUCCESSFUL);
+        tx2.setAmount(new BigDecimal("500.00"));
+        tx2.setReceiverWallet(sender);
+        tx2.setCreatedAt(LocalDateTime.now());
+
+        when(transactionRepository.findAll()).thenReturn(List.of(tx1, tx2));
+
+        List<TransactionResponse> response = adminService.getAllTransactions();
+        assertEquals(2, response.size());
+    }
+
+    @Test
+    public void getAllTransactions_whenNoTransactionsExist_shouldReturnEmptyList() {
+        when(transactionRepository.findAll()).thenReturn(List.of());
+
+        List<TransactionResponse> response = adminService.getAllTransactions();
+        assertEquals(0, response.size());
+    }
+
+    @Test
+    public void getTransactionByReference_whenTransactionExists_shouldReturnTransaction() {
+        Wallet receiver = new Wallet();
+        receiver.setAccountNumber("22222222222222222222");
+
+        Transaction tx = new Transaction();
+        tx.setReference("ref-123");
+        tx.setType(TransactionType.FUNDING);
+        tx.setStatus(TransactionStatus.SUCCESSFUL);
+        tx.setAmount(new BigDecimal("2000.00"));
+        tx.setReceiverWallet(receiver);
+        tx.setCreatedAt(LocalDateTime.now());
+
+        when(transactionRepository.findByReference("ref-123")).thenReturn(Optional.of(tx));
+
+        TransactionResponse response = adminService.getTransactionByReference("ref-123");
+        assertEquals("ref-123", response.getReference());
+        assertEquals(new BigDecimal("2000.00"), response.getAmount());
+        assertEquals(TransactionType.FUNDING, response.getType());
+    }
+
+    @Test
+    public void getTransactionByReference_whenTransactionDoesNotExist_shouldThrowException() {
+        String reference = "unknown-ref";
+        when(transactionRepository.findByReference(reference)).thenReturn(Optional.empty());
+
+        assertThrows(WalletException.class, () -> adminService.getTransactionByReference(reference));
+    }
+
+    @Test
+    public void getTransactionsByWallet_whenWalletExists_shouldReturnTransactions() {
+        Wallet wallet = new Wallet();
+        wallet.setAccountNumber("11111111111111111111");
+
+        Transaction tx = new Transaction();
+        tx.setReference("ref-1");
+        tx.setType(TransactionType.FUNDING);
+        tx.setStatus(TransactionStatus.SUCCESSFUL);
+        tx.setAmount(new BigDecimal("1000.00"));
+        tx.setReceiverWallet(wallet);
+        tx.setCreatedAt(LocalDateTime.now());
+
+        when(walletRepository.findByAccountNumber(wallet.getAccountNumber())).thenReturn(Optional.of(wallet));
+        when(transactionRepository.findBySenderWalletOrReceiverWalletOrderByCreatedAtDesc(wallet, wallet))
+                .thenReturn(List.of(tx));
+
+        List<TransactionResponse> response = adminService.getTransactionsByWallet(wallet.getAccountNumber());
+        assertEquals(1, response.size());
+        assertEquals("ref-1", response.get(0).getReference());
+    }
+
+    @Test
+    public void getTransactionsByWallet_whenWalletDoesNotExist_shouldThrowException() {
+        String accountNumber = "nonexistent";
+        when(walletRepository.findByAccountNumber(accountNumber)).thenReturn(Optional.empty());
+
+        assertThrows(WalletException.class, () -> adminService.getTransactionsByWallet(accountNumber));
     }
 
 }
