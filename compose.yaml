@@ -1,0 +1,17 @@
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: wallet-api
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: wallet_db
+      POSTGRES_USER: wallet_user
+      POSTGRES_PASSWORD: wallet_password
+    ports:
+      - "1001:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
